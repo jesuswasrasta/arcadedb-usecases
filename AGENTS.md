@@ -101,11 +101,20 @@ Action SHAs pinned. Also has `claude.yml` (issue/PR comment trigger) and `claude
 
 Design docs in `docs/plans/` with date prefix: `*-design.md` (architecture), `*-ci.md` (CI spec), `*.md` without suffix (implementation plans).
 
+## Serena (LSP-based Code Navigation)
+
+**Obbligatorio** — Serena è l'unico strumento autorizzato per navigare, cercare e modificare il codice sorgente. È molto più efficiente e precisa di grep/rg/ag perché opera a livello di simboli tramite Language Server Protocol.
+
+- **All'avvio sessione**: verifica che Serena sia attiva e che il progetto sia inizializzato (`serena_activate_project` se necessario). Se non lo è, inizializzalo prima di qualsiasi operazione sul codice.
+- **Code search/modification**: MUST usare la skill `serena`. Non usare grep, ripgrep, ag, sed, o regex-only tools per code transformations.
+- **Refactoring**: usa `serena_jet_brains_rename`, `serena_jet_brains_move`, `serena_jet_brains_safe_delete` per operazioni di refactoring — aggiornano automaticamente tutti i riferimenti.
+- **Fallback**: solo se Serena non è disponibile o non supporta il linguaggio, si può usare temporaneamente grep, ma va segnalato a Nando.
+
 ## Journal
 
 Uso obbligatorio della skill `.opencode/skills/journal/SKILL.md`:
 
-- **All'avvio sessione** — leggi le ultime 1-2 entry di `JOURNAL.md` e chiedi a Nando se ci sono cose da riprendere/continuare. Se non trova il file, ignora.
+- **All'avvio sessione** — leggi le ultime 1-2 entry di `JOURNAL.md` e chiedi a Nando se ci sono cose da riprendere/continuare. Se non trova il file, ignora. Poi verifica che Serena sia attiva.
 - **A fine feature** — quando implementi una feature, la completi o ne cambi direzione, invoca `salva sul journal` per fissare attività, decisioni e apprendimenti prima di chiudere.
 
 <!-- SPECKIT START -->
