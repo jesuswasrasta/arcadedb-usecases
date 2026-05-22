@@ -4,6 +4,32 @@ title: Diario di Lavoro
 created: 2026-05-22
 ---
 
+## [2026-05-23] - Miglioramento skill con apprendimenti da agent-memory
+
+**Attività:**
+- Creato nuovo skill `arcadedb-architect` con SKILL.md (workflow 7 fasi) e interview-template.md (5 fasi, 20 domande, esempi concreti, checklist vincoli, matrici decisionali VERTEX/DOCUMENT/TIMESERIES e tipi indice)
+- Aggiornato `arcadedb-schema-design` con sezione "ArcadeDB SQL Limitations" (12 vincoli documentati con workaround)
+- Aggiornato `arcadedb-java` con sezione "Known Quirks & Constraints" (alias obbligatori, out().property List, dynamic query, ResultSet type handling)
+
+**Decisioni:**
+- Il template dell'architect è obbligatorio prima di scrivere SQL — previene il pattern "scopri mentre codifichi" che ha causato 6+ iterazioni di fix nel solo agent-memory
+- Matrici decisionali nel template (Appendix A/B) invece di testo libero: riducono ambiguità su VERTEX vs DOCUMENT vs TIMESERIES
+- I vincoli ArcadeDB vanno in DUE skill: schema-design (lato DDL/SQL) e java (lato API/type system) — separation of concerns
+
+**Appreso (sistematizzato dal use case agent-memory):**
+- UNION e cross-type JOIN non supportati → template forza a chiedere "devi combinare risultati da tipi diversi?" PRIMA di scrivere query
+- `NOT UNIQUE` deve essere `NOTUNQUE` — sintassi controintuitiva, ora documentata
+- `format(date)` non disponibile → template chiede "come gestisci il time bucketing?" e propone weekNumber pre-computato o TIMESERIES TYPE
+- `out().property` restituisce List con archi multipli → template chiede "ci saranno archi multipli dello stesso tipo?" e indirizza verso Cypher
+- Alias obbligatori in Java → skill java ora lo documenta con esempi right/wrong
+- Root password solo via JAVA_OPTS → template lo chiede in Phase 5 (Connectivity)
+
+**Da ricordare:**
+- L'interview template va usato come primo passo OGNI VOLTA che si progetta un nuovo use case
+- I vincoli vanno tenuti aggiornati: se scopriamo una nuova limitazione, va aggiunta sia al template (checklist) sia alle skill (schema-design + java)
+
+---
+
 ## [2026-05-23] - Implementazione use case agent-memory
 
 **Attività:**
