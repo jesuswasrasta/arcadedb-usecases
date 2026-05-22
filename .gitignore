@@ -122,3 +122,9 @@ node_modules/
 # Claude Code
 .claude/
 
+# JetBrains IDE (blanket ignore — complements specific .idea/** patterns above)
+.idea/
+
+# Serena LSP tooling auto-generated files
+.serena/
+
