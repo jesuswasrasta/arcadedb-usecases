@@ -101,6 +101,13 @@ Action SHAs pinned. Also has `claude.yml` (issue/PR comment trigger) and `claude
 
 Design docs in `docs/plans/` with date prefix: `*-design.md` (architecture), `*-ci.md` (CI spec), `*.md` without suffix (implementation plans).
 
+## Journal
+
+Uso obbligatorio della skill `.opencode/skills/journal/SKILL.md`:
+
+- **All'avvio sessione** — leggi le ultime 1-2 entry di `JOURNAL.md` e chiedi a Nando se ci sono cose da riprendere/continuare. Se non trova il file, ignora.
+- **A fine feature** — quando implementi una feature, la completi o ne cambi direzione, invoca `salva sul journal` per fissare attività, decisioni e apprendimenti prima di chiudere.
+
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
