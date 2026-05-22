@@ -1,0 +1,36 @@
+name: agent-memory
+
+on:
+  push:
+    paths:
+      - 'agent-memory/**'
+  pull_request:
+    paths:
+      - 'agent-memory/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [curl, java]
+    defaults:
+      run:
+        working-directory: agent-memory
+    steps:
+      - uses: actions/checkout@v4
+      - if: matrix.runner == 'java'
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: maven
+      - run: docker compose up -d
+      - run: ./setup.sh
+      - if: matrix.runner == 'curl'
+        run: ./queries/queries.sh
+      - if: matrix.runner == 'java'
+        run: |
+          cd java && mvn package --no-transfer-progress && \
+          java -jar target/agent-memory.jar
+      - run: docker compose down -v
