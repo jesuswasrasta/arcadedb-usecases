@@ -171,6 +171,97 @@ public class RecommendationEngine {
 }
 ```
 
+## Known Quirks & Constraints
+
+ArcadeDB's Java API has specific behaviors you must handle. These are
+discovered through production use across multiple projects.
+
+### Property Aliases Are Mandatory
+
+ArcadeDB returns Java map keys using the full property path when no alias
+is given. Always use `AS alias` in SQL queries accessed from Java.
+
+```java
+// WRONG — Java key becomes "p.name" (literal dot)
+String sql1 = "SELECT p.name FROM Person p";
+Result r = rs.next();
+r.getProperty("p.name");  // Must use string "p.name" — fragile and ugly
+
+// CORRECT — explicit alias
+String sql2 = "SELECT p.name AS name FROM Person p";
+r.getProperty("name");     // Clean key "name"
+```
+
+**Rule**: Every selected expression in a query that will be consumed from Java
+MUST have an `AS alias`. This includes `out('EDGE_TYPE').property`, computed
+expressions, and any column from a pattern match.
+
+### `out('EDGE_TYPE').property` Returns List (Not String)
+
+When a vertex has multiple outgoing edges of the same type targeting different
+vertices, `out('EDGE_TYPE').property` returns a `java.util.ArrayList`, not a
+scalar. This causes `ClassCastException` at runtime.
+
+```java
+// DANGEROUS — returns List if multiple edges exist
+String sql = "SELECT out('HAS_TAG').name AS tag FROM JournalEntry";
+// tag may be ArrayList, not String!
+
+// SAFER — use Cypher for graph traversals with aggregation
+String cypher = """
+    MATCH (j:JournalEntry)-[:HAS_TAG]->(t:ContentTag)
+    RETURN t.name AS tag, count(j) AS freq""";
+// Each row has one tag (scalar String)
+```
+
+**Rule**: For queries that traverse edges where cardinality > 1 is possible,
+prefer Cypher `MATCH` (one row per path) over SQL `out()` (aggregates into List).
+Cypher gives you scalar values per row.
+
+### Dynamic Query Building
+
+When query parameters are determined at runtime (e.g., from previous query
+results), use `String.format` or query parameters:
+
+```java
+// Using String.format (watch for SQL injection in production)
+List<String> names = List.of("Alice", "Bob");
+String idList = names.stream()
+    .map(n -> "'" + n.replace("'", "''") + "'")
+    .collect(Collectors.joining(", "));
+
+String sql = String.format("""
+    SELECT p.name AS person, pr.name AS project
+    FROM (
+      MATCH {type: Person, as: p, where: (name IN [%s])}
+            .out('COLLABORATES_ON'){as: pr}
+      RETURN p, pr
+    )""", idList);
+```
+
+**ArcadeDB note**: Parameterized queries (`?` placeholders) work for scalar
+values but NOT for `IN` lists. Dynamic string building with proper escaping
+(`replace("'", "''")`) is the practical workaround for `IN` clauses.
+
+### ResultSet Type Handling
+
+ArcadeDB returns properties with their native Java types:
+- `STRING`, `INTEGER` → `String`, `Integer`
+- `LIST` properties → `java.util.ArrayList`
+- `DATE` / `DATETIME` → `String` (ISO format) or `java.util.Date`
+
+```java
+Result r = rs.next();
+
+// Safe type handling
+String name = (String) r.getProperty("name");          // Simple cast
+Number count = (Number) r.getProperty("count");        // Use Number for numeric
+int week = ((Number) r.getProperty("weekNumber")).intValue();  // Unbox carefully
+
+@SuppressWarnings("unchecked")
+List<String> tags = (List<String>) r.getProperty("tags");  // List needs unchecked cast
+```
+
 ## Build & Run
 
 ```bash
