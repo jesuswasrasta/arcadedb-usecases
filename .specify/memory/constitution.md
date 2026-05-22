@@ -1,7 +1,12 @@
 <!--
   Sync Impact Report
 
-  Version change: 0.0.0 (template) → 1.0.0
+  Version change: 0.0.0 (template) → 1.0.0 (initial) → 1.0.1 (patch)
+
+  Amendments:
+  - [1.0.1] SQL Discipline: fix trailing semicolons rule (contradiction:
+    MUST NOT vs "stripped by setup.sh") → allow semicolons, stripped by
+    setup.sh
 
   Modified sections (all new — initial fill from template):
   - PROJECT_NAME → "ArcadeDB Use Cases"
@@ -16,11 +21,11 @@
   - Version/date footer → set
 
   Templates requiring updates:
-  - .specify/templates/plan-template.md ✅ (no change needed — generic Constitution Check defers to constitution)
+  - .specify/templates/plan-template.md ✅ (no change needed)
   - .specify/templates/spec-template.md ✅ (no change needed)
   - .specify/templates/tasks-template.md ✅ (no change needed)
   - .specify/templates/checklist-template.md ✅ (no change needed)
-  - AGENTS.md ⚠️ (add constitution reference)
+  - AGENTS.md ✅ (constitution reference + image name)
   - README.md ✅ (no change needed)
 
   Follow-up TODOs: none
@@ -58,8 +63,8 @@ README.
 
 SQL files MUST contain one statement per line. Blank lines and whole-line
 comments (-- at line start, optionally preceded by whitespace) are skipped by
-setup.sh. Source files MUST NOT have trailing semicolons (stripped by
-setup.sh). This rigor enables deterministic processing and clean diffs.
+setup.sh. Trailing semicolons are allowed and stripped by setup.sh
+(`${line%%;}`). This rigor enables deterministic processing and clean diffs.
 
 ### V. CI-Gated Quality
 
@@ -110,4 +115,4 @@ discovered during development MUST be documented in AGENTS.md.
   for new sections, PATCH for clarifications
 - Version and dates recorded in the footer line
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-22 | **Last Amended**: 2026-05-22
+**Version**: 1.0.1 | **Ratified**: 2026-05-22 | **Last Amended**: 2026-05-22

@@ -23,7 +23,7 @@
 
 ```
 <use-case>/
-├── docker-compose.yml          # Single arcadedb service (26.5.1)
+├── docker-compose.yml          # Single arcadedata/arcadedb service (26.5.1)
 ├── setup.sh                    # Waits for ready, creates DB, applies sql/
 ├── sql/
 │   ├── 01-schema.sql           # One statement per line
