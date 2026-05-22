@@ -4,7 +4,38 @@ title: Diario di Lavoro
 created: 2026-05-22
 ---
 
-## [2026-05-22] - Creazione tooling e validazione 10 use case ArcadeDB
+## [2026-05-23] - Implementazione use case agent-memory
+
+**Attività:**
+- Creato nuovo use case `agent-memory/` (personal assistant memory system): 8 VERTEX TYPE, 6 EDGE TYPE, 2 DOCUMENT TYPE
+- Scritti e validati tutti i file: schema, seed data, docker-compose, setup.sh, queries.sh, Java, CI, README
+- Validati 5 pattern di query: graph traversal (Cypher), full-text (SQL CONTAINSTEXT), time-series aggregation (SQL GROUP BY), document hybrid (due query SQL), multi-step agent (Cypher + SQL MATCH con parametri dinamici)
+- Tutte le 5 query funzionano via curl E via Java RemoteDatabase API
+
+**Decisioni:**
+- CoachingSession modellato come DOCUMENT TYPE (non VERTEX), sacrificando traversabilità per semplicità
+- 5 query patterns scelti per dimostrare: Cypher (traversal), SQL CONTAINSTEXT (full-text), GROUP BY (time-series), due query separate (document hybrid), multi-step con passaggio parametri dinamici
+- Q5 Step 1 usa Cypher MATCH (invece di SQL `out('HAS_TAG').name` con GROUP BY) per evitare problemi di type casting List vs String in Java
+
+**Appreso:**
+- `CREATE PROPERTY` NON supporta `IF NOT EXISTS` — necessario gestire errori a livello applicativo
+- `NOT UNIQUE` va scritto come `NOTUNIQUE` (parola singola) nella sintassi ArcadeDB SQL
+- `UNION` non è supportato in ArcadeDB SQL; usare query separate
+- Cross-join `FROM table1, table2` non è supportato; usare query separate
+- `format(date, ...)` non supportato — le date sono già in formato ISO
+- `out('EDGE').property` può restituire una `List` quando ci sono archi multipli, non uno `String` — nel Java RemoteDatabase API bisogna gestire il tipo dinamicamente
+- In Cypher, `RETURN p.name` (senza alias) produce la chiave `p.name` (con punto), quindi in Java va acceduto come `r.getProperty("p.name")`; l'alias `AS name` risolve il problema
+- Docker volume persistence: `docker compose down -v` necessario per reset pulito del database
+
+**Correzioni applicate:**
+- Q2 Java: rimosso UNION, due query separate
+- Q4 Java: rimosso cross-join, due query separate
+- Q5 Step 1: cambiato da SQL `out('HAS_TAG').name` a Cypher `MATCH (t:ContentTag)<-[:HAS_TAG]-(j:JournalEntry)`
+- Q5 Step 2: aggiunto alias `AS name` a `p.name` nel Cypher
+- Q5 Step 3: aggiunto alias `AS state` a `t.state` nel SQL MATCH
+
+---
+
 
 **Attività:**
 - Creati 16 artefatti in `.opencode/`: 8 skills (`arcadedb-graphql`, `arcadedb-sql`, `arcadedb-schemasql`, `arcadedb-cypher`, `arcadedb-vector`, `arcadedb-java`, `arcadedb-compose`, `arcadedb-pgwire`), 3 agent (`arcadedb-consultant`, `arcadedb-reviewer`, `arcadedb-bolt`), 4 comandi (`arcadedb-sql-help`, `arcadedb-cypher-help`, `arcadedb-syntax`, `arcadedb-query`), 1 design plan per `.opencode/agents/README.md`
